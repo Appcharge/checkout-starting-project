@@ -1,15 +1,26 @@
 import React, {useState} from 'react';
 import bundle1 from './assets/bundle1.svg';
 import './style.scss';
-import axios from "axios";
 import {AppchargeCheckout} from "appcharge-checkout-reactjs-sdk";
-
-const CHECKOUT_TOKEN = '25d9f232107fbf7f2d15666fdbf06fa7ac4f7eac16c3262a65ed1a15a98f3e35';
+import {Box, Button, Modal, TextField} from "@mui/material";
 
 function App() {
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [token, setToken] = useState('');
     const [domain, setDomain] = useState('');
+
+    const style = {
+        position: 'absolute' as 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+    };
 
     const data = {
         customer: {
@@ -47,26 +58,17 @@ function App() {
             },
         ]
     };
-
-    const headers = {
-        headers: {
-            "x-publisher-token": CHECKOUT_TOKEN
-        }
-    }
     const onClickToPurchase = () => {
-        axios.post('https://a3no38e5c1.execute-api.us-east-1.amazonaws.com/sandbox/createSession', data, headers)
-            .catch((err) => console.log(err))
-            .then((res) => {
-                if (!res) return;
-                setToken(res.data.checkoutSessionToken)
-                setDomain(res.data.url)
-                setIsCheckoutOpen(true);
-            });
+        setIsModalOpen(true);
+    }
+
+    const applyClicked = () => {
+        setIsCheckoutOpen(true);
     }
 
     return (
         <div className="gamestore">
-            <h1 className={"store-title"}>Rony's Store</h1>
+            <h1 className={"store-title"}>Sample Store</h1>
             <div className={"bundles_container"}>
                 <div className={"bundle"} onClick={onClickToPurchase}>
                     <img src={bundle1} alt={""}/>
@@ -75,6 +77,25 @@ function App() {
                     <img src={bundle1} alt={""}/>
                 </div>
             </div>
+
+            {isModalOpen && (
+                <Modal
+                    open={true}
+                    onClose={() => console.log}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                >
+                    <Box sx={style}
+                         className={"modal"}>
+                        <TextField id="outlined-basic" label="Domain" variant="outlined" value={domain}
+                                   onChange={(e) => setDomain(e.target.value)}/>
+                        <TextField id="outlined-basic" label="Session Token" variant="outlined" value={token}
+                                   onChange={(e) => setToken(e.target.value)}/>
+                        <Box sx={{marginLeft: 'auto', paddingTop: '10px'}}><Button variant={'contained'}
+                                                                                   onClick={applyClicked}>Apply</Button></Box>
+                    </Box>
+                </Modal>
+            )}
 
             {isCheckoutOpen && (
                 <AppchargeCheckout domain={domain} sessionToken={token}
